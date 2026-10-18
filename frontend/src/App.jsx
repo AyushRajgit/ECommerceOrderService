@@ -11,6 +11,7 @@ import {
   MapPin,
   Menu,
   PackageCheck,
+  Pencil,
   Plus,
   Search,
   Shirt,
@@ -116,10 +117,21 @@ function formatPrice(value) {
   }).format(amount);
 }
 
+function createEmptyManagerProduct() {
+  return {
+    productName: '',
+    productPrice: '',
+    availableQuantity: '10',
+    productDescription: '',
+    merchantDetail: 'Shopnest Marketplace',
+  };
+}
+
 function App() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
+  const [role, setRole] = useState(null);
   const [email, setEmail] = useState(() => localStorage.getItem(EMAIL_KEY) || '');
   const [profile, setProfile] = useState(readProfile);
   const [authOpen, setAuthOpen] = useState(() => !localStorage.getItem(EMAIL_KEY));
@@ -135,6 +147,7 @@ function App() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [pageNo, setPageNo] = useState(0);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [sort, setSort] = useState('featured');
   const [toast, setToast] = useState('');
   const toastTimeout = useRef(null);
@@ -148,8 +161,9 @@ function App() {
   const loadProducts = async () => {
     const catalog = await fetchProductCatalog();
     setProducts(catalog);
-    setAuthenticated(true);
   };
+
+  const isManager = role?.split(',').includes('ROLE_MANAGER') || false;
 
   const fetchCustomerProfile = async (accountEmail) => {
     const customer = await apiRequest('/register-customer/me');
@@ -169,9 +183,14 @@ function App() {
         return;
       }
       try {
+        const currentUser = await apiRequest('/auth/me');
+        if (!cancelled) {
+          setRole(currentUser.role);
+          setAuthenticated(true);
+          setAuthOpen(false);
+        }
         await loadProducts();
         if (!cancelled) {
-          setAuthOpen(false);
           let restoredProfile = null;
           try {
             restoredProfile = await fetchCustomerProfile(email);
@@ -197,6 +216,11 @@ function App() {
         }
       } catch (error) {
         if (!cancelled && error.status !== 401) showToast(error.message);
+        if (!cancelled && error.status === 401) {
+          setAuthenticated(false);
+          setRole(null);
+          setProducts([]);
+        }
         if (!cancelled) setAuthOpen(true);
       } finally {
         if (!cancelled) setLoadingProducts(false);
@@ -234,6 +258,9 @@ function App() {
       await apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(credentials) });
     }
     await apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
+    const currentUser = await apiRequest('/auth/me');
+    setRole(currentUser.role);
+    setAuthenticated(true);
     const profileMatchesAccount = profile && (!profile.email || profile.email.toLowerCase() === credentials.email.toLowerCase());
     if (!profileMatchesAccount) {
       localStorage.removeItem(PROFILE_KEY);
@@ -280,6 +307,7 @@ function App() {
     localStorage.removeItem(EMAIL_KEY);
     localStorage.removeItem(PROFILE_KEY);
     setAuthenticated(false);
+    setRole(null);
     setEmail('');
     setProfile(null);
     setProducts([]);
@@ -319,6 +347,32 @@ function App() {
       }
     } finally {
       setLoadingOrders(false);
+    }
+  };
+
+  const saveManagerProduct = async (product) => {
+    const updating = Boolean(editingProduct);
+    const payload = updating ? { ...product, productId: editingProduct.productId } : product;
+    await apiRequest(updating ? '/register-product/update' : '/register-product', {
+      method: updating ? 'PATCH' : 'POST',
+      body: JSON.stringify(payload),
+    });
+    setEditingProduct(null);
+    await loadProducts();
+    setPageNo(0);
+    showToast(updating ? 'Product updated.' : 'Product added to the store.');
+  };
+
+  const deleteProduct = async (product) => {
+    if (!window.confirm(`Delete ${product.productName}?`)) return;
+    try {
+      await apiRequest(`/register-product/${product.productId}`, { method: 'DELETE' });
+      setProducts((items) => items.filter((item) => Number(item.productId) !== Number(product.productId)));
+      if (Number(editingProduct?.productId) === Number(product.productId)) setEditingProduct(null);
+      setPageNo(0);
+      showToast('Product deleted.');
+    } catch (error) {
+      showToast(error.message);
     }
   };
 
@@ -417,7 +471,7 @@ function App() {
           </form>
           <div className="header-account">
             <button className="header-link account-link" onClick={() => authenticated ? showToast(`Signed in as ${email}`) : setAuthOpen(true)}>
-              <small>{authenticated ? 'Hello' : 'Welcome'}</small>
+              <small>{authenticated ? (isManager ? 'Manager account' : 'Hello') : 'Welcome'}</small>
               <strong>{authenticated ? (email.split('@')[0] || 'Account') : 'Sign in'}</strong>
             </button>
             {authenticated && <button className="signout-link" onClick={signOut}>Sign out</button>}
@@ -464,6 +518,14 @@ function App() {
           <div className="hero-bottom-line"><span>Thoughtful picks</span><span>Simple shopping</span><span>Everyday value</span></div>
         </section>
 
+        {isManager && (
+          <ManagerDashboard
+            editingProduct={editingProduct}
+            onSave={saveManagerProduct}
+            onCancelEdit={() => setEditingProduct(null)}
+          />
+        )}
+
         <section className="benefit-strip" aria-label="Shopping benefits">
           <div><Truck size={22} /><span><strong>Delivery details at checkout</strong><small>Add your address to your profile</small></span></div>
           <div><PackageCheck size={22} /><span><strong>Made for easy browsing</strong><small>Find your next everyday favorite</small></span></div>
@@ -508,13 +570,22 @@ function App() {
             <div className="empty-catalog">
               <div className="empty-icon"><Tag size={26} /></div>
               <h3>{products.length ? 'No matches this time' : 'Your store is ready for its first product'}</h3>
-              <p>{products.length ? 'Try another search or department.' : 'Products added through your backend will show up here.'}</p>
+              <p>{products.length ? 'Try another search or department.' : isManager ? 'Add the first listing from your manager workspace above.' : 'Products added by the store manager will show up here.'}</p>
               {products.length > 0 && <button className="text-button" onClick={() => { setSearch(''); setActiveCategory('all'); setPageNo(0); }}>Clear filters</button>}
             </div>
           ) : (
             <div className="product-grid">
               {pageProducts.map((product, index) => (
-                <ProductCard key={product.productId} product={product} index={index} onAdd={addToCart} authenticated={authenticated} />
+                <ProductCard
+                  key={product.productId}
+                  product={product}
+                  index={index}
+                  onAdd={addToCart}
+                  authenticated={authenticated}
+                  isManager={isManager}
+                  onEdit={() => setEditingProduct(product)}
+                  onDelete={() => deleteProduct(product)}
+                />
               ))}
             </div>
           )}
@@ -579,7 +650,65 @@ function App() {
   );
 }
 
-function ProductCard({ product, index, onAdd, authenticated }) {
+function ManagerDashboard({ editingProduct, onSave, onCancelEdit }) {
+  const [form, setForm] = useState(createEmptyManagerProduct);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setForm(editingProduct ? {
+      productName: editingProduct.productName || '',
+      productPrice: editingProduct.productPrice || '',
+      availableQuantity: editingProduct.availableQuantity ?? 0,
+      productDescription: editingProduct.productDescription || '',
+      merchantDetail: editingProduct.merchantDetail || 'Shopnest Marketplace',
+    } : createEmptyManagerProduct());
+    setError('');
+  }, [editingProduct]);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await onSave({
+        ...form,
+        productPrice: Number(form.productPrice),
+        availableQuantity: Number(form.availableQuantity),
+      });
+      if (!editingProduct) {
+        setForm(createEmptyManagerProduct());
+      }
+    } catch (saveError) {
+      setError(saveError.message || 'Could not save this product.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section className="manager-panel" id="manager-tools">
+      <div className="manager-panel-heading">
+        <div><span className="section-kicker">Manager workspace</span><h2>Manage store products</h2></div>
+        <p>Add products to the store or update existing listings.</p>
+      </div>
+      {error && <div className="form-error" role="alert">{error}</div>}
+      <form className="manager-product-form" onSubmit={submit}>
+        <label>Product name<input required value={form.productName} onChange={(event) => setForm({ ...form, productName: event.target.value })} /></label>
+        <label>Price (₹)<input type="number" min="0.01" step="0.01" required value={form.productPrice} onChange={(event) => setForm({ ...form, productPrice: event.target.value })} /></label>
+        <label>Stock quantity<input type="number" min="0" step="1" required value={form.availableQuantity} onChange={(event) => setForm({ ...form, availableQuantity: event.target.value })} /></label>
+        <label className="manager-description">Description<textarea required rows="2" value={form.productDescription} onChange={(event) => setForm({ ...form, productDescription: event.target.value })} /></label>
+        <label>Seller<input value={form.merchantDetail} onChange={(event) => setForm({ ...form, merchantDetail: event.target.value })} /></label>
+        <div className="manager-form-actions">
+          <button className="primary-button" disabled={saving}>{saving ? 'Saving…' : editingProduct ? 'Save changes' : 'Add product'}</button>
+          {editingProduct && <button type="button" className="text-button" onClick={onCancelEdit}>Cancel edit</button>}
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function ProductCard({ product, index, onAdd, authenticated, isManager, onEdit, onDelete }) {
   const category = productCategory(product);
   const stock = Number(product.availableQuantity || 0);
   const iconMap = {
@@ -612,6 +741,12 @@ function ProductCard({ product, index, onAdd, authenticated }) {
         <button className="add-button" disabled={!authenticated || stock <= 0} onClick={() => onAdd(product)}>
           <Plus size={17} /> {stock > 0 ? 'Add to cart' : 'Out of stock'}
         </button>
+        {isManager && (
+          <div className="manager-product-actions">
+            <button onClick={onEdit}><Pencil size={14} /> Edit</button>
+            <button onClick={onDelete}><Trash2 size={14} /> Delete</button>
+          </div>
+        )}
       </div>
     </article>
   );

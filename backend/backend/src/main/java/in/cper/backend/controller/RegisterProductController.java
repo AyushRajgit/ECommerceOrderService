@@ -60,7 +60,7 @@ public class RegisterProductController {
 
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<String> deleteProductById(@RequestParam int productId){
+    public ResponseEntity<String> deleteProductById(@PathVariable int productId){
         registerProductService.remove(productId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Product with id " + productId + " has been deleted");
     }

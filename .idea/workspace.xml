@@ -6,7 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="008749a7-561a-4dce-ba85-17575acb8fb7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/bootstrap/ProductDataInitializer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/controller/RegisterProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/controller/RegisterProductController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
