@@ -26,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 
-const API = '/api/amazon';
+const API = import.meta.env.VITE_API_URL || '/api/amazon';
 const PRODUCT_PAGE_SIZE = 10;
 const EMAIL_KEY = 'shopnest.email';
 const PROFILE_KEY = 'shopnest.customer';
