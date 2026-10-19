@@ -26,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 
-const BASE_URL = import.meta.env.BACKEND_API_URL;
+const BASE_URL = import.meta.env.BACKEND_API_URL || 'http://localhost:8080';
 const API = `${BASE_URL.replace(/\/$/, '')}/api/amazon`;
 const PRODUCT_PAGE_SIZE = 10;
 const EMAIL_KEY = 'shopnest.email';

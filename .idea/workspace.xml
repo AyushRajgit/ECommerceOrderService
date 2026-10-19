@@ -6,10 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="008749a7-561a-4dce-ba85-17575acb8fb7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/cors/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/cors/CorsConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/backend/src/main/java/in/cper/backend/security/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,9 +18,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Exception" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -78,7 +77,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
+    <configuration name="BackendApplication" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="envFilePaths">
         <option value="$PROJECT_DIR$/../Spring_Security_WorkspacePro/backend/backend/.env" />
         <option value="$PROJECT_DIR$/backend/backend/.env" />
